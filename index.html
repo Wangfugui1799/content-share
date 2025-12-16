@@ -40,12 +40,6 @@
                         </svg>
                     </button>
                 </div>
-                <button class="btn btn-primary" id="newPostBtn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"></path>
-                    </svg>
-                    <span>写文章</span>
-                </button>
             </div>
         </div>
     </nav>
@@ -56,7 +50,7 @@
         <section class="view" id="homeView">
             <!-- 英雄区域 -->
             <div class="hero">
-                <h1 class="hero-title">在这里，<span class="gradient-text">分享你的思想</span></h1>
+                <h1 class="hero-title">在这里，<span class="gradient-text">阅读精彩内容</span></h1>
                 <p class="hero-subtitle">溪石是一个优雅的纯文字内容分享平台，让文字回归本真</p>
             </div>
 
@@ -74,9 +68,9 @@
                     <!-- 动态生成的文章卡片 -->
                 </div>
                 <div class="empty-state" id="emptyState">
-                    <div class="empty-icon">📝</div>
-                    <h3>还没有文章</h3>
-                    <p>点击"写文章"按钮，分享你的第一篇内容吧！</p>
+                    <div class="empty-icon">📖</div>
+                    <h3>暂无文章</h3>
+                    <p>敬请期待更多精彩内容</p>
                 </div>
             </div>
         </section>
@@ -98,85 +92,199 @@
                     </div>
                 </header>
                 <div class="post-content" id="postContent"></div>
-                <div class="post-actions">
-                    <button class="action-btn" id="editPostBtn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        编辑
-                    </button>
-                    <button class="action-btn danger" id="deletePostBtn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                            </path>
-                        </svg>
-                        删除
-                    </button>
-                </div>
             </article>
         </section>
-
-        <!-- 编辑器视图 -->
-        <section class="view hidden" id="editorView">
-            <div class="editor-container">
-                <div class="editor-header">
-                    <button class="back-btn" id="editorBackBtn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="m15 18-6-6 6-6"></path>
-                        </svg>
-                        <span>取消</span>
-                    </button>
-                    <button class="btn btn-primary" id="publishBtn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M22 2L11 13"></path>
-                            <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
-                        </svg>
-                        <span>发布</span>
-                    </button>
-                </div>
-                <div class="editor-body">
-                    <input type="text" class="editor-title" id="editorTitle" placeholder="输入文章标题..." maxlength="100">
-                    <div class="title-counter">
-                        <span id="titleCount">0</span>/100
-                    </div>
-                    <textarea class="editor-content" id="editorContent"
-                        placeholder="开始写作...&#10;&#10;在这里倾诉你的想法，分享你的故事。&#10;支持多段落，自动保存草稿。"></textarea>
-                    <div class="editor-footer">
-                        <div class="word-count">
-                            <span id="wordCount">0</span> 字
-                        </div>
-                        <div class="auto-save-status" id="autoSaveStatus">
-                            草稿已自动保存
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
-
-    <!-- 删除确认弹窗 -->
-    <div class="modal-overlay hidden" id="deleteModal">
-        <div class="modal">
-            <div class="modal-icon">🗑️</div>
-            <h3 class="modal-title">确认删除</h3>
-            <p class="modal-text">删除后无法恢复，确定要删除这篇文章吗？</p>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" id="cancelDeleteBtn">取消</button>
-                <button class="btn btn-danger" id="confirmDeleteBtn">删除</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Toast 通知 -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="app.js"></script>
+    <script>
+        /**
+         * 溪石 - 前台展示
+         * 仅展示文章，管理功能请访问 admin.html
+         */
+        const App = {
+            posts: [],
+            currentPostId: null,
+
+            init() {
+                this.loadPosts();
+                this.bindEvents();
+                this.renderPosts();
+            },
+
+            loadPosts() {
+                const saved = localStorage.getItem('xishi_posts');
+                if (saved) {
+                    this.posts = JSON.parse(saved);
+                } else {
+                    // 默认示例文章
+                    this.posts = [
+                        {
+                            id: Date.now(),
+                            title: '欢迎来到溪石',
+                            content: '溪石是一个优雅的纯文字内容分享平台。在这里，你可以阅读精彩的文章和故事。\n\n我们相信，最好的内容不需要华丽的装饰，文字本身就是最有力量的表达方式。',
+                            createdAt: Date.now(),
+                            views: 128
+                        },
+                        {
+                            id: Date.now() + 1,
+                            title: '关于阅读这件事',
+                            content: '阅读是一种与作者对话的方式。当我们沉浸在文字中时，时间仿佛静止。\n\n每一篇文章都是一扇窗，让我们看见不同的世界，体验不同的人生。\n\n愿你在这里找到触动心灵的文字。',
+                            createdAt: Date.now() - 86400000,
+                            views: 256
+                        }
+                    ];
+                    this.savePosts();
+                }
+            },
+
+            savePosts() {
+                localStorage.setItem('xishi_posts', JSON.stringify(this.posts));
+            },
+
+            bindEvents() {
+                // Logo - 回到首页
+                document.getElementById('logo').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showView('homeView');
+                });
+
+                // 搜索
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchPosts(e.target.value);
+                });
+
+                // 筛选标签
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        this.filterPosts(tab.dataset.filter);
+                    });
+                });
+
+                // 返回按钮
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    this.showView('homeView');
+                });
+            },
+
+            showView(viewId) {
+                document.querySelectorAll('.view').forEach(view => {
+                    view.classList.add('hidden');
+                });
+                document.getElementById(viewId).classList.remove('hidden');
+                window.scrollTo(0, 0);
+            },
+
+            renderPosts(postsToRender = this.posts) {
+                const grid = document.getElementById('postsGrid');
+                const emptyState = document.getElementById('emptyState');
+
+                if (postsToRender.length === 0) {
+                    grid.innerHTML = '';
+                    emptyState.classList.add('show');
+                    return;
+                }
+
+                emptyState.classList.remove('show');
+                grid.innerHTML = postsToRender.map(post => this.createPostCard(post)).join('');
+
+                // 绑定卡片点击事件
+                grid.querySelectorAll('.post-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        this.viewPost(parseInt(card.dataset.id));
+                    });
+                });
+            },
+
+            createPostCard(post) {
+                const date = new Date(post.createdAt).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                const excerpt = post.content.substring(0, 150) + (post.content.length > 150 ? '...' : '');
+                const readingTime = Math.max(1, Math.ceil(post.content.length / 400));
+
+                return `
+                    <article class="post-card" data-id="${post.id}">
+                        <h3 class="post-card-title">${this.escapeHtml(post.title)}</h3>
+                        <p class="post-card-excerpt">${this.escapeHtml(excerpt)}</p>
+                        <div class="post-card-meta">
+                            <span>${date}</span>
+                            <span>约 ${readingTime} 分钟阅读</span>
+                        </div>
+                    </article>
+                `;
+            },
+
+            viewPost(id) {
+                const post = this.posts.find(p => p.id === id);
+                if (!post) return;
+
+                this.currentPostId = id;
+                post.views = (post.views || 0) + 1;
+                this.savePosts();
+
+                document.getElementById('postTitle').textContent = post.title;
+                document.getElementById('postContent').textContent = post.content;
+
+                const date = new Date(post.createdAt).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('postDate').textContent = date;
+
+                const readingTime = Math.max(1, Math.ceil(post.content.length / 400));
+                document.getElementById('postReadingTime').textContent = `约 ${readingTime} 分钟阅读`;
+
+                this.showView('postView');
+            },
+
+            searchPosts(query) {
+                if (!query.trim()) {
+                    this.renderPosts();
+                    return;
+                }
+
+                const filtered = this.posts.filter(post =>
+                    post.title.toLowerCase().includes(query.toLowerCase()) ||
+                    post.content.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderPosts(filtered);
+            },
+
+            filterPosts(filter) {
+                let sorted = [...this.posts];
+                switch (filter) {
+                    case 'popular':
+                        sorted.sort((a, b) => (b.views || 0) - (a.views || 0));
+                        break;
+                    case 'recent':
+                        sorted.sort((a, b) => b.createdAt - a.createdAt);
+                        break;
+                    default:
+                    // 全部保持默认顺序
+                }
+                this.renderPosts(sorted);
+            },
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        };
+
+        // 页面加载完成后初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+    </script>
 </body>
 
 </html>

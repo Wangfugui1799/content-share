@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>溪石 - 管理后台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        /* 管理后台额外样式 */
+        .admin-header {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-home {
+            background: rgba(107, 114, 128, 0.2);
+            color: var(--text-secondary);
+            border: 1px solid rgba(107, 114, 128, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-home:hover {
+            background: rgba(107, 114, 128, 0.3);
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .posts-table {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .post-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .post-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        .post-item:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-info {
+            flex: 1;
+        }
+
+        .post-item-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .post-item-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--purple);
+        }
+
+        .btn-edit:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* 登录页面 */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .login-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 0.2em;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 登录页面 -->
+    <div id="loginView" class="login-container">
+        <div class="login-box">
+            <div class="login-icon">🔐</div>
+            <h1 class="login-title">管理后台</h1>
+            <p class="login-subtitle">请输入管理密码</p>
+            <form class="login-form" id="loginForm">
+                <input type="password" class="login-input" id="passwordInput" placeholder="••••••" maxlength="20"
+                    autocomplete="off">
+                <p class="login-error" id="loginError">密码错误，请重试</p>
+                <button type="submit" class="login-btn">进入后台</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 管理后台 -->
+    <div id="adminView" class="hidden">
+        <header class="admin-header">
+            <div class="admin-title">🔧 溪石管理后台</div>
+            <div class="admin-actions">
+                <a href="index.html" class="btn-home">← 返回前台</a>
+                <button class="btn-logout" id="logoutBtn">退出登录</button>
+            </div>
+        </header>
+
+        <div class="admin-container">
+            <!-- 统计卡片 -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPosts">0</div>
+                    <div class="stat-label">文章总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalViews">0</div>
+                    <div class="stat-label">总浏览量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalWords">0</div>
+                    <div class="stat-label">总字数</div>
+                </div>
+            </div>
+
+            <!-- 文章列表 -->
+            <div class="posts-table">
+                <div class="table-header">
+                    <h2 class="table-title">文章管理</h2>
+                    <button class="btn-primary" id="newPostBtn">
+                        <span>+</span> 新建文章
+                    </button>
+                </div>
+                <div class="post-list" id="postList">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑器弹窗 -->
+    <div class="modal hidden" id="editorModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <h3 class="modal-title" id="editorModalTitle">新建文章</h3>
+            <div class="editor-field">
+                <label class="editor-label">标题</label>
+                <input type="text" class="editor-title-input" id="editorTitle" placeholder="请输入文章标题..." maxlength="100">
+            </div>
+            <div class="editor-field">
+                <label class="editor-label">内容</label>
+                <textarea class="editor-content-input" id="editorContent" placeholder="开始写作..."
+                    style="min-height: 300px;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancelEditBtn">取消</button>
+                <button class="modal-btn modal-btn-confirm" id="savePostBtn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div class="modal hidden" id="deleteModal">
+        <div class="modal-content">
+            <h3 class="modal-title">确认删除</h3>
+            <p class="modal-text">确定要删除这篇文章吗？此操作无法撤销。</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancelDeleteBtn">取消</button>
+                <button class="modal-btn modal-btn-confirm" id="confirmDeleteBtn">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        /**
+         * 溪石管理后台
+         */
+        const Admin = {
+            posts: [],
+            editingPostId: null,
+            deletePostId: null,
+            // 管理密码 (实际项目中应使用后端验证)
+            ADMIN_PASSWORD: 'xishi2024',
+
+            init() {
+                this.checkAuth();
+                this.bindEvents();
+            },
+
+            checkAuth() {
+                const isLoggedIn = sessionStorage.getItem('xishi_admin_auth');
+                if (isLoggedIn === 'true') {
+                    this.showAdmin();
+                }
+            },
+
+            bindEvents() {
+                // 登录
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.login();
+                });
+
+                // 退出
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.logout();
+                });
+
+                // 新建文章
+                document.getElementById('newPostBtn').addEventListener('click', () => {
+                    this.openEditor();
+                });
+
+                // 取消编辑
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    document.getElementById('editorModal').classList.add('hidden');
+                });
+
+                // 保存文章
+                document.getElementById('savePostBtn').addEventListener('click', () => {
+                    this.savePost();
+                });
+
+                // 取消删除
+                document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                    document.getElementById('deleteModal').classList.add('hidden');
+                });
+
+                // 确认删除
+                document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                    this.deletePost();
+                });
+            },
+
+            login() {
+                const password = document.getElementById('passwordInput').value;
+                if (password === this.ADMIN_PASSWORD) {
+                    sessionStorage.setItem('xishi_admin_auth', 'true');
+                    this.showAdmin();
+                } else {
+                    document.getElementById('loginError').classList.add('show');
+                    document.getElementById('passwordInput').value = '';
+                    setTimeout(() => {
+                        document.getElementById('loginError').classList.remove('show');
+                    }, 3000);
+                }
+            },
+
+            logout() {
+                sessionStorage.removeItem('xishi_admin_auth');
+                document.getElementById('adminView').classList.add('hidden');
+                document.getElementById('loginView').classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+            },
+
+            showAdmin() {
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('adminView').classList.remove('hidden');
+                this.loadPosts();
+                this.renderPosts();
+                this.updateStats();
+            },
+
+            loadPosts() {
+                const saved = localStorage.getItem('xishi_posts');
+                if (saved) {
+                    this.posts = JSON.parse(saved);
+                } else {
+                    this.posts = [
+                        {
+                            id: Date.now(),
+                            title: '欢迎来到溪石',
+                            content: '溪石是一个优雅的纯文字内容分享平台。在这里，你可以自由地书写你的想法，分享你的故事。\n\n我们相信，最好的内容不需要华丽的装饰，文字本身就是最有力量的表达方式。',
+                            createdAt: Date.now(),
+                            views: 128
+                        }
+                    ];
+                    this.savePosts();
+                }
+            },
+
+            savePosts() {
+                localStorage.setItem('xishi_posts', JSON.stringify(this.posts));
+            },
+
+            renderPosts() {
+                const list = document.getElementById('postList');
+                if (this.posts.length === 0) {
+                    list.innerHTML = '<div style="padding: 3rem; text-align: center; color: var(--text-secondary);">暂无文章，点击上方按钮创建</div>';
+                    return;
+                }
+
+                list.innerHTML = this.posts.map(post => {
+                    const date = new Date(post.createdAt).toLocaleDateString('zh-CN');
+                    const wordCount = post.content.replace(/\s/g, '').length;
+                    return `
+                        <div class="post-item">
+                            <div class="post-info">
+                                <div class="post-item-title">${this.escapeHtml(post.title)}</div>
+                                <div class="post-item-meta">${date} · ${wordCount} 字 · ${post.views || 0} 次浏览</div>
+                            </div>
+                            <div class="post-actions">
+                                <button class="btn-sm btn-edit" onclick="Admin.openEditor(${post.id})">编辑</button>
+                                <button class="btn-sm btn-delete" onclick="Admin.confirmDelete(${post.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            updateStats() {
+                document.getElementById('totalPosts').textContent = this.posts.length;
+                document.getElementById('totalViews').textContent = this.posts.reduce((sum, p) => sum + (p.views || 0), 0);
+                document.getElementById('totalWords').textContent = this.posts.reduce((sum, p) => sum + p.content.replace(/\s/g, '').length, 0);
+            },
+
+            openEditor(id = null) {
+                this.editingPostId = id;
+                const modal = document.getElementById('editorModal');
+                const title = document.getElementById('editorTitle');
+                const content = document.getElementById('editorContent');
+                const modalTitle = document.getElementById('editorModalTitle');
+
+                if (id) {
+                    const post = this.posts.find(p => p.id === id);
+                    if (post) {
+                        title.value = post.title;
+                        content.value = post.content;
+                        modalTitle.textContent = '编辑文章';
+                    }
+                } else {
+                    title.value = '';
+                    content.value = '';
+                    modalTitle.textContent = '新建文章';
+                }
+
+                modal.classList.remove('hidden');
+                title.focus();
+            },
+
+            savePost() {
+                const title = document.getElementById('editorTitle').value.trim();
+                const content = document.getElementById('editorContent').value.trim();
+
+                if (!title) {
+                    this.showToast('请输入文章标题', 'error');
+                    return;
+                }
+                if (!content) {
+                    this.showToast('请输入文章内容', 'error');
+                    return;
+                }
+
+                if (this.editingPostId) {
+                    const index = this.posts.findIndex(p => p.id === this.editingPostId);
+                    if (index !== -1) {
+                        this.posts[index].title = title;
+                        this.posts[index].content = content;
+                        this.posts[index].updatedAt = Date.now();
+                    }
+                    this.showToast('文章已更新', 'success');
+                } else {
+                    this.posts.unshift({
+                        id: Date.now(),
+                        title,
+                        content,
+                        createdAt: Date.now(),
+                        views: 0
+                    });
+                    this.showToast('文章已发布', 'success');
+                }
+
+                this.savePosts();
+                this.renderPosts();
+                this.updateStats();
+                document.getElementById('editorModal').classList.add('hidden');
+            },
+
+            confirmDelete(id) {
+                this.deletePostId = id;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            },
+
+            deletePost() {
+                this.posts = this.posts.filter(p => p.id !== this.deletePostId);
+                this.savePosts();
+                this.renderPosts();
+                this.updateStats();
+                document.getElementById('deleteModal').classList.add('hidden');
+                this.showToast('文章已删除', 'success');
+            },
+
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('toast-out');
+                    setTimeout(() => toast.remove(), 250);
+                }, 3000);
+            },
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Admin.init();
+        });
+    </script>
+</body>
+
+</html>
