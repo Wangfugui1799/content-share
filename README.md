@@ -75,10 +75,13 @@ content-share/
 ## 📸 预览
 
 ### 首页
-![首页预览](https://via.placeholder.com/800x450/0a0a0f/8b5cf6?text=溪石+首页)
+![首页预览](./screenshots/homepage.png)
 
 ### 编辑器
-![编辑器预览](https://via.placeholder.com/800x450/0a0a0f/06b6d4?text=溪石+编辑器)
+![编辑器预览](./screenshots/editor.png)
+
+### 文章详情
+![文章详情预览](./screenshots/article.png)
 
 ## 📄 开源协议
 
